@@ -86,6 +86,23 @@ namespace UnityScrollController
                                 content.GetChild(index).GetComponent<IScrollEvent>()?.OnScrollIn();
                             }
                         }
+                        else if (horizontalLayoutGroup!= null)
+                        {
+                            if (GetLeft(index) < 0.0f)
+                            {
+                                content.GetChild(index).GetComponent<IScrollEvent>()?.OnScrollOut();
+                                index++;
+                                if (index > content.childCount - 1) index = content.childCount - 1;
+                                content.GetChild(index).GetComponent<IScrollEvent>()?.OnScrollIn();
+                            }
+                            else if (GetRight(index) > scrollTrans.rect.width)
+                            {
+                                content.GetChild(index).GetComponent<IScrollEvent>()?.OnScrollOut();
+                                index--;
+                                if (index < 0) index = 0;
+                                content.GetChild(index).GetComponent<IScrollEvent>()?.OnScrollIn();
+                            }
+                        }
                     }
                     break;
                 case State.ANIMATE:
@@ -248,7 +265,7 @@ namespace UnityScrollController
         {
             var now = content.GetChild(index) as RectTransform;
             {
-                now.GetComponent<IScrollEvent>()?.OnScrollIn();
+                now.GetComponent<IScrollEvent>()?.OnScrollOut();
                 index++;
                 if (index > content.childCount - 1)
                 {
@@ -328,6 +345,7 @@ namespace UnityScrollController
             float ndiff = diff / (content.rect.width - scrollTrans.rect.width);
             float n = scrollRect.horizontalNormalizedPosition + ndiff;
             n = Mathf.Clamp01(n);
+            if (index == 0) n = 0.0f;
             TweenHorizontal(n);
         }
 
