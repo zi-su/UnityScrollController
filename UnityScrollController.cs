@@ -3,7 +3,8 @@ using UnityEngine.UI;
 using System;
 using System.Collections;
 using DG.Tweening;
-namespace UnityScrollController{
+namespace UnityScrollController
+{
 	public class UnityScrollController : MonoBehaviour{
         [SerializeField] ScrollRect scrollRect;
         [SerializeField] VerticalLayoutGroup verticalLayoutGroup;
@@ -20,6 +21,7 @@ namespace UnityScrollController{
         {
             WAIT,
             UPDATE,
+            ANIMATE,
         }
         State state = State.WAIT;
         private void Start()
@@ -71,16 +73,22 @@ namespace UnityScrollController{
                         {
                             if (GetTop(index) > 0.0f)
                             {
+                                content.GetChild(index).GetComponent<IScrollEvent>()?.OnScrollOut();
                                 index++;
                                 if (index > content.childCount - 1) index = content.childCount - 1;
+                                content.GetChild(index).GetComponent<IScrollEvent>()?.OnScrollIn();
                             }
                             else if (Mathf.Abs(GetBottom(index)) > scrollTrans.rect.height)
                             {
+                                content.GetChild(index).GetComponent<IScrollEvent>()?.OnScrollOut();
                                 index--;
                                 if (index < 0) index = 0;
+                                content.GetChild(index).GetComponent<IScrollEvent>()?.OnScrollIn();
                             }
                         }
                     }
+                    break;
+                case State.ANIMATE:
                     break;
             }
             Debug.Log(index);
@@ -137,88 +145,64 @@ namespace UnityScrollController{
             return right;
         }
 
-        void MoveIndex(int index)
+        public void MoveIndex(int index)
         {
             if(horizontalLayoutGroup != null)
             {
+                var now = content.GetChild(this.index) as RectTransform;
+                var next = content.GetChild(index) as RectTransform;
+                now.GetComponent<IScrollEvent>()?.OnScrollOut();
+                next.GetComponent<IScrollEvent>()?.OnScrollIn();
                 if (OutAreaHorizontal(index))
                 {
-                    var now = content.GetChild(this.index) as RectTransform;
-                    var child = content.GetChild(index) as RectTransform;
                     if (index < this.index)
                     {
-                        //左端に映るように移動
-                        float left = GetLeft(index) - horizontalLayoutGroup.spacing;
-                        float n = left / (content.rect.width - scrollTrans.rect.width);
-                        n = scrollRect.horizontalNormalizedPosition + n;
-                        n = Mathf.Clamp01(n);
-                        TweenHorizontal(n);
-                        this.index = index;
+                        MoveIndexLeft(index);
                     }
                     else
                     {
-                        //右端に映るように移動
-                        float right = GetRight(index) + horizontalLayoutGroup.spacing;
-                        right = right - scrollTrans.rect.width;
-                        float n = right / (content.rect.width - scrollTrans.rect.width);
-                        n = scrollRect.horizontalNormalizedPosition + (n);
-                        n = Mathf.Clamp01(n);
-                        TweenHorizontal(n);
-                        this.index = index;
+                        MoveIndexRight(index);
                     }
                 }
             }
             else if(verticalLayoutGroup != null)
             {
+                var now = content.GetChild(this.index) as RectTransform;
+                var next = content.GetChild(index) as RectTransform;
+                now.GetComponent<IScrollEvent>()?.OnScrollOut();
+                next.GetComponent<IScrollEvent>()?.OnScrollIn();
                 if (OutAreaVertical(index))
                 {
-                    var child = content.GetChild(index) as RectTransform;
                     if (index < this.index)
                     {
                         //上端に映るように移動
-                        float top = GetTop(index) + verticalLayoutGroup.spacing;
-                        float n = top / (content.rect.height - scrollTrans.rect.height);
-                        n = scrollRect.verticalNormalizedPosition+ n;
-                        n = Mathf.Clamp01(n);
-                        TweenVertical(n);
-                        this.index = index;
+                        MoveIndexUp(index);
                     }
                     else
                     {
                         //下端に映るように移動
-                        float down = GetBottom(index) - verticalLayoutGroup.spacing;
-                        down = down + scrollTrans.rect.height;
-                        float n = down / (content.rect.height - scrollTrans.rect.height);
-                        n = scrollRect.verticalNormalizedPosition + n;
-                        n = Mathf.Clamp01(n);
-                        TweenVertical(n);
-                        this.index = index;
+                        MoveIndexDown(index);
                     }
                 }
             }
         }
+
         public void MoveDown()
         {
             var now = content.GetChild(index) as RectTransform;
             {
+                now.GetComponent<IScrollEvent>()?.OnScrollOut();
                 index++;
                 if (index > content.childCount - 1)
                 {
                     index = 0;
                 }
+                content.GetChild(index).GetComponent<IScrollEvent>()?.OnScrollIn();
             }
             if (OutAreaVertical(index))
             {
                 //現在位置、次の位置の差分だけ移動
-                var child = content.GetChild(index) as RectTransform;
-                float diff = child.localPosition.y - now.localPosition.y;
-                float ndiff = diff / (content.rect.height - scrollTrans.rect.height);
-                float n = scrollRect.verticalNormalizedPosition + ndiff;
-                n = Mathf.Clamp01(n);
-                TweenVertical(n);
-                now.GetComponent<IScrollEvent>()?.OnScrollOut();
-                child.GetComponent<IScrollEvent>()?.OnScrollIn();
-
+                DiffMoveVertical(now, content.GetChild(index) as RectTransform);
             }
         }
 
@@ -226,22 +210,18 @@ namespace UnityScrollController{
         {
             var now = content.GetChild(index) as RectTransform;
             {
+                now.GetComponent<IScrollEvent>()?.OnScrollOut();
                 index--;
                 if (index < 0)
                 {
                     index = content.childCount - 1;
                 }
+                content.GetChild(index).GetComponent<IScrollEvent>()?.OnScrollIn();
             }
             if (OutAreaVertical(index))
             {
                 //現在位置、次の位置の差分だけ移動
-                var child = content.GetChild(index) as RectTransform;
-                float diff = child.localPosition.y - now.localPosition.y;
-                float ndiff = diff / (content.rect.height - scrollTrans.rect.height);
-                float n = scrollRect.verticalNormalizedPosition + ndiff;
-                if (index == 0) n = 1.0f;
-                n = Mathf.Clamp01(n);
-                TweenVertical(n);
+                DiffMoveVertical(now, content.GetChild(index) as RectTransform);
             }
         }
 
@@ -249,22 +229,18 @@ namespace UnityScrollController{
         {
             var now = content.GetChild(index) as RectTransform;
             {
+                now.GetComponent<IScrollEvent>()?.OnScrollOut();
                 index--;
                 if (index < 0)
                 {
                     index = content.childCount - 1;
                 }
+                content.GetChild(index).GetComponent<IScrollEvent>()?.OnScrollIn();
             }
             if (OutAreaHorizontal(index))
             {
                 //現在位置、次の位置の差分だけ移動
-                var child = content.GetChild(index) as RectTransform;
-                float diff = child.localPosition.x - now.localPosition.x;
-                float ndiff = diff / (content.rect.width - scrollTrans.rect.width);
-                float n = scrollRect.horizontalNormalizedPosition + ndiff;
-                if (index == 0) n = 0.0f;
-                n = Mathf.Clamp01(n);
-                TweenHorizontal(n);
+                DiffMoveHorizontal(now, content.GetChild(index) as RectTransform);
             }
         }
 
@@ -272,22 +248,87 @@ namespace UnityScrollController{
         {
             var now = content.GetChild(index) as RectTransform;
             {
+                now.GetComponent<IScrollEvent>()?.OnScrollIn();
                 index++;
                 if (index > content.childCount - 1)
                 {
                     index = 0;
                 }
+                content.GetChild(index).GetComponent<IScrollEvent>()?.OnScrollIn();
             }
             if (OutAreaHorizontal(index))
             {
                 //現在位置、次の位置の差分だけ移動
-                var child = content.GetChild(index) as RectTransform;
-                float diff = child.localPosition.x - now.localPosition.x;
-                float ndiff = diff / (content.rect.width - scrollTrans.rect.width);
-                float n = scrollRect.horizontalNormalizedPosition + ndiff;
-                n = Mathf.Clamp01(n);
-                TweenHorizontal(n);
+                DiffMoveHorizontal(now, content.GetChild(index) as RectTransform);
             }
+        }
+
+
+        void MoveIndexLeft(int index)
+        {
+            //左端に映るように移動
+            float left = GetLeft(index) - horizontalLayoutGroup.spacing;
+            float n = left / (content.rect.width - scrollTrans.rect.width);
+            n = scrollRect.horizontalNormalizedPosition + n;
+            n = Mathf.Clamp01(n);
+            TweenHorizontal(n);
+            this.index = index;
+        }
+
+        void MoveIndexRight(int index)
+        {
+            //右端に映るように移動
+            float right = GetRight(index) + horizontalLayoutGroup.spacing;
+            right = right - scrollTrans.rect.width;
+            float n = right / (content.rect.width - scrollTrans.rect.width);
+            n = scrollRect.horizontalNormalizedPosition + (n);
+            n = Mathf.Clamp01(n);
+            TweenHorizontal(n);
+            this.index = index;
+        }
+
+        void MoveIndexDown(int index)
+        {
+            //下端に映るように移動
+            float down = GetBottom(index) - verticalLayoutGroup.spacing;
+            down = down + scrollTrans.rect.height;
+            float n = down / (content.rect.height - scrollTrans.rect.height);
+            n = scrollRect.verticalNormalizedPosition + n;
+            n = Mathf.Clamp01(n);
+            TweenVertical(n);
+            this.index = index;
+        }
+
+        void MoveIndexUp(int index)
+        {
+            //上端に映るように移動
+            float top = GetTop(index) + verticalLayoutGroup.spacing;
+            float n = top / (content.rect.height - scrollTrans.rect.height);
+            n = scrollRect.verticalNormalizedPosition + n;
+            n = Mathf.Clamp01(n);
+            TweenVertical(n);
+            this.index = index;
+        }
+
+        void DiffMoveVertical(Transform now, Transform next)
+        {
+            //現在位置、次の位置の差分だけ移動
+            float diff = next.localPosition.y - now.localPosition.y;
+            float ndiff = diff / (content.rect.height - scrollTrans.rect.height);
+            float n = scrollRect.verticalNormalizedPosition + ndiff;
+            if (index == 0) n = 1.0f;
+            n = Mathf.Clamp01(n);
+            TweenVertical(n);
+        }
+
+        void DiffMoveHorizontal(Transform now, Transform next)
+        {
+            //現在位置、次の位置の差分だけ移動
+            float diff = next.localPosition.x - now.localPosition.x;
+            float ndiff = diff / (content.rect.width - scrollTrans.rect.width);
+            float n = scrollRect.horizontalNormalizedPosition + ndiff;
+            n = Mathf.Clamp01(n);
+            TweenHorizontal(n);
         }
 
         void TweenHorizontal(float n)
