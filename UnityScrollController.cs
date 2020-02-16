@@ -21,7 +21,7 @@ namespace UnityScrollController
         {
             WAIT,   //自動レイアウトの設定待ち
             UPDATE,
-            ANIMATE,
+            ANIMATE,    //アニメーション中の待ち
         }
         State state = State.WAIT;
         private void Start()
