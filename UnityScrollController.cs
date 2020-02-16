@@ -43,34 +43,34 @@ namespace UnityScrollController
                         {
                             if (GetTop(index) > 0.0f)
                             {
-                                content.GetChild(index).GetComponent<IScrollEvent>()?.Deselect();
+                                content.GetChild(index).GetComponent<IScrollEvent>()?.OnDeselect();
                                 index++;
                                 if (index > content.childCount - 1) index = content.childCount - 1;
-                                content.GetChild(index).GetComponent<IScrollEvent>()?.Select();
+                                content.GetChild(index).GetComponent<IScrollEvent>()?.OnSelect();
                             }
                             else if (Mathf.Abs(GetBottom(index)) > scrollTrans.rect.height)
                             {
-                                content.GetChild(index).GetComponent<IScrollEvent>()?.Deselect();
+                                content.GetChild(index).GetComponent<IScrollEvent>()?.OnDeselect();
                                 index--;
                                 if (index < 0) index = 0;
-                                content.GetChild(index).GetComponent<IScrollEvent>()?.Select();
+                                content.GetChild(index).GetComponent<IScrollEvent>()?.OnSelect();
                             }
                         }
                         else if (horizontalLayoutGroup!= null)
                         {
                             if (GetLeft(index) < 0.0f)
                             {
-                                content.GetChild(index).GetComponent<IScrollEvent>()?.Deselect();
+                                content.GetChild(index).GetComponent<IScrollEvent>()?.OnDeselect();
                                 index++;
                                 if (index > content.childCount - 1) index = content.childCount - 1;
-                                content.GetChild(index).GetComponent<IScrollEvent>()?.Select();
+                                content.GetChild(index).GetComponent<IScrollEvent>()?.OnSelect();
                             }
                             else if (GetRight(index) > scrollTrans.rect.width)
                             {
-                                content.GetChild(index).GetComponent<IScrollEvent>()?.Deselect();
+                                content.GetChild(index).GetComponent<IScrollEvent>()?.OnDeselect();
                                 index--;
                                 if (index < 0) index = 0;
-                                content.GetChild(index).GetComponent<IScrollEvent>()?.Select();
+                                content.GetChild(index).GetComponent<IScrollEvent>()?.OnSelect();
                             }
                         }
                     }
@@ -92,8 +92,8 @@ namespace UnityScrollController
             {
                 var now = content.GetChild(this.index) as RectTransform;
                 var next = content.GetChild(index) as RectTransform;
-                now.GetComponent<IScrollEvent>()?.Deselect();
-                next.GetComponent<IScrollEvent>()?.Select();
+                now.GetComponent<IScrollEvent>()?.OnDeselect();
+                next.GetComponent<IScrollEvent>()?.OnSelect();
                 if (OutAreaHorizontal(index))
                 {
                     if (index < this.index)
@@ -110,8 +110,8 @@ namespace UnityScrollController
             {
                 var now = content.GetChild(this.index) as RectTransform;
                 var next = content.GetChild(index) as RectTransform;
-                now.GetComponent<IScrollEvent>()?.Deselect();
-                next.GetComponent<IScrollEvent>()?.Select();
+                now.GetComponent<IScrollEvent>()?.OnDeselect();
+                next.GetComponent<IScrollEvent>()?.OnSelect();
                 if (OutAreaVertical(index))
                 {
                     if (index < this.index)
@@ -133,13 +133,13 @@ namespace UnityScrollController
             if (IsAnimate()) return;
             var now = content.GetChild(index) as RectTransform;
             {
-                now.GetComponent<IScrollEvent>()?.Deselect();
+                now.GetComponent<IScrollEvent>()?.OnDeselect();
                 index++;
                 if (index > content.childCount - 1)
                 {
                     index = 0;
                 }
-                content.GetChild(index).GetComponent<IScrollEvent>()?.Select();
+                content.GetChild(index).GetComponent<IScrollEvent>()?.OnSelect();
             }
             if (OutAreaVertical(index))
             {
@@ -153,13 +153,13 @@ namespace UnityScrollController
             if (IsAnimate()) return;
             var now = content.GetChild(index) as RectTransform;
             {
-                now.GetComponent<IScrollEvent>()?.Deselect();
+                now.GetComponent<IScrollEvent>()?.OnDeselect();
                 index--;
                 if (index < 0)
                 {
                     index = content.childCount - 1;
                 }
-                content.GetChild(index).GetComponent<IScrollEvent>()?.Select();
+                content.GetChild(index).GetComponent<IScrollEvent>()?.OnSelect();
             }
             if (OutAreaVertical(index))
             {
@@ -173,13 +173,13 @@ namespace UnityScrollController
             if (IsAnimate()) return;
             var now = content.GetChild(index) as RectTransform;
             {
-                now.GetComponent<IScrollEvent>()?.Deselect();
+                now.GetComponent<IScrollEvent>()?.OnDeselect();
                 index--;
                 if (index < 0)
                 {
                     index = content.childCount - 1;
                 }
-                content.GetChild(index).GetComponent<IScrollEvent>()?.Select();
+                content.GetChild(index).GetComponent<IScrollEvent>()?.OnSelect();
             }
             if (OutAreaHorizontal(index))
             {
@@ -193,13 +193,13 @@ namespace UnityScrollController
             if (IsAnimate()) return;
             var now = content.GetChild(index) as RectTransform;
             {
-                now.GetComponent<IScrollEvent>()?.Deselect();
+                now.GetComponent<IScrollEvent>()?.OnDeselect();
                 index++;
                 if (index > content.childCount - 1)
                 {
                     index = 0;
                 }
-                content.GetChild(index).GetComponent<IScrollEvent>()?.Select();
+                content.GetChild(index).GetComponent<IScrollEvent>()?.OnSelect();
             }
             if (OutAreaHorizontal(index))
             {
