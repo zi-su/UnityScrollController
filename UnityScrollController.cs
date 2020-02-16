@@ -21,6 +21,7 @@ namespace UnityScrollController
         {
             WAIT,   //自動レイアウトの設定待ち
             UPDATE,
+            ANIMATE,
         }
         State state = State.WAIT;
         private void Start()
@@ -37,36 +38,6 @@ namespace UnityScrollController
                     state = State.UPDATE;
                     break;
                 case State.UPDATE:
-                    if (Input.GetKeyDown(KeyCode.DownArrow))
-                    {
-                        MoveDown();
-                    }
-                    else if (Input.GetKeyDown(KeyCode.UpArrow))
-                    {
-                        MoveUp();
-                    }
-                    if (Input.GetKeyDown(KeyCode.LeftArrow))
-                    {
-                        MoveLeft();
-                    }
-                    if (Input.GetKeyDown(KeyCode.RightArrow))
-                    {
-                        MoveRight();
-                    }
-                    if (Input.GetKeyDown(KeyCode.H))
-                    {
-                        MoveIndex(4);
-                    }
-                    if (Input.GetKeyDown(KeyCode.G))
-                    {
-                        MoveIndex(0);
-                    }
-                    if (Input.GetKeyDown(KeyCode.J))
-                    {
-                        MoveIndex(content.childCount - 1);
-                    }
-
-                    if (!wait)
                     {
                         if (verticalLayoutGroup != null)
                         {
@@ -104,10 +75,15 @@ namespace UnityScrollController
                         }
                     }
                     break;
+                case State.ANIMATE:
+                    break;
             }
             Debug.Log(index);
         }
-        
+        public bool IsAnimate()
+        {
+            return state == State.ANIMATE;
+        }
         public GameObject GetCurrent()
         {
             return content.GetChild(index).gameObject;
@@ -157,6 +133,7 @@ namespace UnityScrollController
 
         public void MoveDown()
         {
+            if (IsAnimate()) return;
             var now = content.GetChild(index) as RectTransform;
             {
                 now.GetComponent<IScrollEvent>()?.OnScrollOut();
@@ -176,6 +153,7 @@ namespace UnityScrollController
 
         public void MoveUp()
         {
+            if (IsAnimate()) return;
             var now = content.GetChild(index) as RectTransform;
             {
                 now.GetComponent<IScrollEvent>()?.OnScrollOut();
@@ -195,6 +173,7 @@ namespace UnityScrollController
 
         public void MoveLeft()
         {
+            if (IsAnimate()) return;
             var now = content.GetChild(index) as RectTransform;
             {
                 now.GetComponent<IScrollEvent>()?.OnScrollOut();
@@ -214,6 +193,7 @@ namespace UnityScrollController
 
         public void MoveRight()
         {
+            if (IsAnimate()) return;
             var now = content.GetChild(index) as RectTransform;
             {
                 now.GetComponent<IScrollEvent>()?.OnScrollOut();
@@ -302,16 +282,26 @@ namespace UnityScrollController
 
         void TweenHorizontal(float n)
         {
-            wait = true;
+            scrollRect.enabled = false;
+            state = State.ANIMATE;
             var t = DOTween.To(() => scrollRect.horizontalNormalizedPosition, x => scrollRect.horizontalNormalizedPosition = x, n, time);
-            t.onComplete += () => wait = false;
+            t.onComplete += () =>
+            {
+                state = State.UPDATE;
+                scrollRect.enabled = true;
+            };
         }
 
         void TweenVertical(float n)
         {
-            wait = true;
+            scrollRect.enabled = false;
+            state = State.ANIMATE;
             var t = DOTween.To(() => scrollRect.verticalNormalizedPosition, x => scrollRect.verticalNormalizedPosition = x, n, time);
-            t.onComplete += () => wait = false;
+            t.onComplete += () =>
+            {
+                state = State.UPDATE;
+                scrollRect.enabled = true;
+            };
         }
 
         bool OutAreaVertical(int index)
