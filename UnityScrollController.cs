@@ -19,9 +19,8 @@ namespace UnityScrollController
         
         enum State
         {
-            WAIT,
+            WAIT,   //自動レイアウトの設定待ち
             UPDATE,
-            ANIMATE,
         }
         State state = State.WAIT;
         private void Start()
@@ -105,63 +104,15 @@ namespace UnityScrollController
                         }
                     }
                     break;
-                case State.ANIMATE:
-                    break;
             }
             Debug.Log(index);
         }
         
-        bool OutAreaVertical(int index)
+        public GameObject GetCurrent()
         {
-            var child = content.GetChild(index) as RectTransform;
-            float top = GetTop(index);
-            float bottom = GetBottom(index);
-            if(top > 0 || Mathf.Abs(bottom) > scrollTrans.rect.height)
-            {
-                return true;
-            }
-            return false;
+            return content.GetChild(index).gameObject;
         }
-
-        bool OutAreaHorizontal(int index)
-        {
-            float left = GetLeft(index);
-            float right = GetRight(index);
-            if (left < 0 || right > scrollTrans.rect.width)
-            {
-                return true;
-            }
-            return false;
-        }
-
-        float GetTop(int index)
-        {
-            var child = content.GetChild(index) as RectTransform;
-            float top = child.localPosition.y + child.rect.height * child.pivot.y + content.localPosition.y;
-            return top;
-        }
-
-        float GetBottom(int index)
-        {
-            var child = content.GetChild(index) as RectTransform;
-            float bottom = child.localPosition.y - child.rect.height * child.pivot.y + content.localPosition.y;
-            return bottom;
-        }
-
-        float GetLeft(int index)
-        {
-            var child = content.GetChild(index) as RectTransform;
-            float left = child.localPosition.x - child.rect.width * child.pivot.x + content.localPosition.x;
-            return left;
-        }
-
-        float GetRight(int index)
-        {
-            var child = content.GetChild(index) as RectTransform;
-            float right = child.localPosition.x + child.rect.width * child.pivot.x + content.localPosition.x;
-            return right;
-        }
-
+        
         public void MoveIndex(int index)
         {
             if(horizontalLayoutGroup != null)
@@ -362,5 +313,57 @@ namespace UnityScrollController
             var t = DOTween.To(() => scrollRect.verticalNormalizedPosition, x => scrollRect.verticalNormalizedPosition = x, n, time);
             t.onComplete += () => wait = false;
         }
-	}
+
+        bool OutAreaVertical(int index)
+        {
+            var child = content.GetChild(index) as RectTransform;
+            float top = GetTop(index);
+            float bottom = GetBottom(index);
+            if (top > 0 || Mathf.Abs(bottom) > scrollTrans.rect.height)
+            {
+                return true;
+            }
+            return false;
+        }
+
+        bool OutAreaHorizontal(int index)
+        {
+            float left = GetLeft(index);
+            float right = GetRight(index);
+            if (left < 0 || right > scrollTrans.rect.width)
+            {
+                return true;
+            }
+            return false;
+        }
+
+        float GetTop(int index)
+        {
+            var child = content.GetChild(index) as RectTransform;
+            float top = child.localPosition.y + child.rect.height * child.pivot.y + content.localPosition.y;
+            return top;
+        }
+
+        float GetBottom(int index)
+        {
+            var child = content.GetChild(index) as RectTransform;
+            float bottom = child.localPosition.y - child.rect.height * child.pivot.y + content.localPosition.y;
+            return bottom;
+        }
+
+        float GetLeft(int index)
+        {
+            var child = content.GetChild(index) as RectTransform;
+            float left = child.localPosition.x - child.rect.width * child.pivot.x + content.localPosition.x;
+            return left;
+        }
+
+        float GetRight(int index)
+        {
+            var child = content.GetChild(index) as RectTransform;
+            float right = child.localPosition.x + child.rect.width * child.pivot.x + content.localPosition.x;
+            return right;
+        }
+
+    }
 }
