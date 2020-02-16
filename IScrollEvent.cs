@@ -5,8 +5,8 @@ using UnityEngine;
 namespace UnityScrollController{
     public interface IScrollEvent
     {
-        void OnScrollOut();
-        void OnScrollIn();
+        void Deselect();
+        void Select();
     }
 }
 
